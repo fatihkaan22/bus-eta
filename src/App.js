@@ -30,7 +30,7 @@ const getBusInfo = (stopName, bus, direction) => {
         name.includes(stopName)
       );
       const busDistances = buses.map(([stop, idx]) => thisStopIdx - idx);
-      return busDistances | [];
+      return busDistances;
     })
     .catch((error) => {
       console.error(error);
@@ -42,12 +42,19 @@ function App() {
   const BUS = '502';
   const DIRECTION = '1';
 
+  const NO_ARRIVING = 4;
+  const NO_PASSED = 2;
+  const FETCH_INTERVAL = 2000;
+
   const [busDistances, setBusDistances] = useState([]);
 
   useEffect(() => {
-    getBusInfo(STOP_NAME, BUS, DIRECTION).then((distances) =>
-      setBusDistances(distances)
-    );
+    const interval = setInterval(() => {
+      getBusInfo(STOP_NAME, BUS, DIRECTION).then((distances) =>
+        setBusDistances(distances)
+      );
+    }, FETCH_INTERVAL);
+    return () => clearInterval(interval);
   }, []);
 
   const theme = createTheme({
@@ -124,16 +131,15 @@ function App() {
           {busDistances
             ? busDistances
                 .filter((d) => d > 0)
-                .sort()
-                .reverse()
                 .map((d) => <Bus distance={d} isArriving />)
+                .slice(-NO_ARRIVING)
             : ''}
           {Home}
           {busDistances
             ? busDistances
                 .filter((d) => d <= 0)
-                .sort()
                 .map((d) => <Bus distance={d} />)
+                .slice(0, NO_PASSED)
             : ''}
           {Campus}
         </Timeline>
