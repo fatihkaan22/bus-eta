@@ -53,8 +53,8 @@ function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      getBusInfo(STOP_NAME, BUS, DIRECTION).then((distances) =>
-        setBusDistances(distances)
+      getBusInfo(STOP_NAME, BUS, DIRECTION).then(
+        (distances) => distances.length > 0 && setBusDistances(distances)
       );
     }, FETCH_INTERVAL);
     return () => clearInterval(interval);
