@@ -37,6 +37,8 @@ const getBusInfo = (stopName, bus, direction) => {
     });
 };
 
+const fmtMSS = (s) => (s - (s %= 60)) / 60 + (9 < s ? ':' : ':0') + s;
+
 function App() {
   const STOP_NAME = 'GÜNERİ SOKAK';
   const BUS = '502';
@@ -45,6 +47,7 @@ function App() {
   const NO_ARRIVING = 4;
   const NO_PASSED = 2;
   const FETCH_INTERVAL = 2000;
+  const ELAPSED_TIME_BETWEEN_STOPS = 25; // seconds
 
   const [busDistances, setBusDistances] = useState([]);
 
@@ -99,18 +102,18 @@ function App() {
     </TimelineItem>
   );
 
-  const Bus = ({ distance, isArriving }) => (
+  const Bus = ({ distance, arriving, eta }) => (
     <TimelineItem>
       <TimelineOppositeContent
         sx={{ m: 'auto 0' }}
         variant="body2"
         color="text.secondary"
       >
-        {isArriving && 'ETA:'}
+        {arriving && `ETA: ${fmtMSS(eta)}`}
       </TimelineOppositeContent>
       <TimelineSeparator>
         <TimelineConnector />
-        <TimelineDot color={isArriving ? 'success' : 'error'}>
+        <TimelineDot color={arriving ? 'success' : 'error'}>
           <DirectionsBus />
         </TimelineDot>
         <TimelineConnector />
@@ -131,15 +134,21 @@ function App() {
           {busDistances
             ? busDistances
                 .filter((d) => d > 0)
-                .map((d) => <Bus distance={d} isArriving />)
                 .slice(-NO_ARRIVING)
+                .map((d) => (
+                  <Bus
+                    distance={d}
+                    eta={d * ELAPSED_TIME_BETWEEN_STOPS}
+                    arriving
+                  />
+                ))
             : ''}
           {Home}
           {busDistances
             ? busDistances
                 .filter((d) => d <= 0)
-                .map((d) => <Bus distance={d} />)
                 .slice(0, NO_PASSED)
+                .map((d) => <Bus distance={d} />)
             : ''}
           {Campus}
         </Timeline>
